@@ -1,17 +1,17 @@
-# Pipeline de Datos de Criptomonedas
+# Cryptocurrency Data Pipeline
 
-Pipeline automatizado que extrae, transforma y visualiza información de criptomonedas desde CoinGecko API.
+Automated pipeline that extracts, transforms, and visualizes cryptocurrency information from the CoinGecko API.
 
-## Características
+## Features
 
-- Actualización automática cada 15 minutos
-- 250+ criptomonedas con datos de mercado completos
-- Trending coins en tiempo real
-- Vistas analíticas pre-construidas
-- Totalmente dockerizado
-- Orquestación con Airflow
+- Automatic update every 15 minutes
+- 250+ cryptocurrencies with complete market data
+- Real-time trending coins
+- Pre-built analytical views
+- Fully dockerized
+- Orchestration with Airflow
 
-## Arquitectura
+## Architecture
 
 ```
 CoinGecko API → dlt → PostgreSQL → SQL → Metabase
@@ -21,40 +21,40 @@ CoinGecko API → dlt → PostgreSQL → SQL → Metabase
 
 **Stack:** dlt | PostgreSQL 15 | Apache Airflow 2.10 | Metabase | Docker
 
-## Inicio Rápido
+## Quick Start
 
-### Prerrequisitos
+### Prerequisites
 
-- Docker Desktop instalado y corriendo
+- Docker Desktop installed and running
 
-### Instalación
+### Installation
 
 ```powershell
-# Clonar repositorio
-git clone https://github.com/tu-usuario/criptomonedas-pipeline.git
+# Clone repository
+git clone https://github.com/your-username/cryptocurrency-pipeline.git
 cd criptomonedas-pipeline
 
-# Setup automático
+# Automatic setup
 .\setup.ps1
 ```
 
-### Acceso a Servicios
+### Service Access
 
-| Servicio | URL | Credenciales |
+| Service | URL | Credentials |
 |----------|-----|--------------|
 | Airflow | http://localhost:8080 | `admin` / `admin` |
-| Metabase | http://localhost:3000 | Configurar en primer acceso |
+| Metabase | http://localhost:3000 | Configure on first access |
 | PostgreSQL | `localhost:5432` | `postgres` / `QJ9dPbEPh6ojikGMX8kDbA` |
 
-## Estructura
+## Structure
 
 ```
 .
 ├── dags/
-│   └── pipeline_dag.py              # DAG de Airflow
+│   └── pipeline_dag.py              # Airflow DAG
 ├── etl/
 │   ├── extract/
-│   │   └── coingecko_pipeline.py    # Pipeline dlt
+│   │   └── coingecko_pipeline.py    # dlt Pipeline
 │   └── transform/
 │       └── crypto_transformations.sql
 ├── docker-compose.yml
@@ -62,105 +62,105 @@ cd criptomonedas-pipeline
 └── run-pipeline.ps1
 ```
 
-## Datos
+## Data
 
-### Tablas (`crypto_raw` schema)
+### Tables (`crypto_raw` schema)
 
-- `market_data` - Datos de mercado (250+ cryptos)
-- `trending_coins` - Criptomonedas en tendencia
-- `global_stats` - Estadísticas globales
+- `market_data` - Market data (250+ cryptos)
+- `trending_coins` - Trending cryptocurrencies
+- `global_stats` - Global statistics
 
-### Vistas Analíticas
+### Analytical Views
 
-- `crypto_market_summary` - Resumen con métricas calculadas
-- `crypto_price_changes` - Cambios de precio (1h, 24h, 7d, 30d)
-- `crypto_top_performers` - Top 10 ganadores y perdedores
-- `crypto_market_overview` - Vista agregada del mercado
-- `crypto_trending_summary` - Trending coins con datos de mercado
+- `crypto_market_summary` - Summary with calculated metrics
+- `crypto_price_changes` - Price changes (1h, 24h, 7d, 30d)
+- `crypto_top_performers` - Top 10 winners and losers
+- `crypto_market_overview` - Aggregated market view
+- `crypto_trending_summary` - Trending coins with market data
 
-## Uso
+## Usage
 
-### Ejecutar Pipeline
+### Run Pipeline
 
 ```powershell
 .\run-pipeline.ps1
 ```
 
-### Consultas SQL
+### SQL Queries
 
 ```sql
--- Top 10 por market cap
+-- Top 10 by market cap
 SELECT market_cap_rank, name, symbol, current_price, market_cap 
 FROM crypto_raw.market_data 
 ORDER BY market_cap_rank LIMIT 10;
 
--- Vista general
+-- General view
 SELECT * FROM crypto_market_overview;
 ```
 
-### Conectar a PostgreSQL
+### Connect to PostgreSQL
 
 ```bash
 docker exec -it criptomonedas-postgres-1 psql -U postgres -d warehouse
 ```
 
-### Comandos Docker
+### Docker Commands
 
 ```bash
-# Detener
+# Stop
 docker compose down
 
-# Reiniciar
+# Restart
 docker compose restart
 
-# Ver logs
+# View logs
 docker logs criptomonedas-airflow-1 -f
 ```
 
-## Configuración Metabase
+## Metabase Configuration
 
-1. Acceder a http://localhost:3000
-2. Crear cuenta de administrador
-3. Configurar conexión PostgreSQL:
+1. Access http://localhost:3000
+2. Create administrator account
+3. Configure PostgreSQL connection:
    - Host: `postgres`
-   - Puerto: `5432`
+   - Port: `5432`
    - Database: `warehouse`
-   - Usuario: `postgres`
+   - User: `postgres`
    - Password: `QJ9dPbEPh6ojikGMX8kDbA`
 
-## Configuración Avanzada
+## Advanced Configuration
 
-### Variables de Entorno
+### Environment Variables
 
-Editar `.env.dev`, `.env.staging` o `.env.prod`:
+Edit `.env.dev`, `.env.staging` or `.env.prod`:
 
 ```bash
 DATA_DB_HOST=postgres
 DATA_DB_PORT=5432
 DATA_DB_NAME=warehouse
 DATA_DB_USER=postgres
-DATA_DB_PASSWORD=tu_password
+DATA_DB_PASSWORD=your_password
 
 AIRFLOW__CORE__EXECUTOR=SequentialExecutor
 AIRFLOW__CORE__LOAD_EXAMPLES=false
 ```
 
-### Cambiar Frecuencia
+### Change Frequency
 
-Editar `dags/pipeline_dag.py`:
+Edit `dags/pipeline_dag.py`:
 
 ```python
-schedule_interval='*/15 * * * *'  # Cada 15 minutos
-# schedule_interval='0 * * * *'   # Cada hora
-# schedule_interval='0 0 * * *'   # Diario
+schedule_interval='*/15 * * * *'  # Every 15 minutes
+# schedule_interval='0 * * * *'   # Hourly
+# schedule_interval='0 0 * * *'   # Daily
 ```
 
-## Despliegue Kubernetes
+## Kubernetes Deployment
 
 ```bash
 helm install criptomonedas ./kubernetes
 ```
 
-## Licencia
+## License
 
 MIT
