@@ -33,7 +33,6 @@ services:
     volumes:
       - ./dags:/opt/airflow/dags
       - ./etl:/opt/airflow/etl
-      - ./ingestion_pipeline.py:/opt/airflow/ingestion_pipeline.py
     command: standalone
     networks:
       - antigravity_net
