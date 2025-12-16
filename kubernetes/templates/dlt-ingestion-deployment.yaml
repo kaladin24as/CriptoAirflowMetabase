@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dlt-ingestion
+  labels:
+    app: dlt-ingestion
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dlt-ingestion
+  template:
+    metadata:
+      labels:
+        app: dlt-ingestion
+    spec:
+      containers:
+      - name: dlt-ingestion
+        image: nginx:latest
+        imagePullPolicy: IfNotPresent
+        
+        env:
+        
+        - name: DESTINATION__POSTGRES__CREDENTIALS
+          value: "postgresql://user:password@postgres:5432/db"
+        
+        - name: PIPELINE_NAME
+          value: "antigravity_pipeline"
+        
+        
+        

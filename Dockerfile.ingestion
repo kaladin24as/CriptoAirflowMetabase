@@ -1,0 +1,25 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements and install Python dependencies
+COPY etl/extract/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy pipeline code
+COPY etl/extract/coingecko_pipeline.py .
+
+# Create directory for dlt state
+RUN mkdir -p /app/.dlt
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+
+# Run the pipeline
+CMD ["python", "coingecko_pipeline.py"]

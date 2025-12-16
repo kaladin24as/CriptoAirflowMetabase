@@ -1,0 +1,83 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: QJ9dPbEPh6ojikGMX8kDbA
+      POSTGRES_DB: warehouse
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - antigravity_net
+  airflow:
+    image: apache/airflow:2.10.2
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      AIRFLOW__CORE__EXECUTOR: SequentialExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: sqlite:////opt/airflow/airflow.db
+      _AIRFLOW_DB_UPGRADE: 'true'
+      _AIRFLOW_WWW_USER_CREATE: 'true'
+      _AIRFLOW_WWW_USER_USERNAME: admin
+      _AIRFLOW_WWW_USER_PASSWORD: admin
+      DESTINATION__CREDENTIALS: postgres://postgres:QJ9dPbEPh6ojikGMX8kDbA@postgres:5432/warehouse
+      DATA_DB_HOST: postgres
+      DATA_DB_PORT: '5432'
+      DATA_DB_USER: postgres
+      DATA_DB_PASSWORD: QJ9dPbEPh6ojikGMX8kDbA
+      DATA_DB_NAME: warehouse
+    ports:
+      - 8080:8080
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./etl:/opt/airflow/etl
+      - ./ingestion_pipeline.py:/opt/airflow/ingestion_pipeline.py
+    command: standalone
+    networks:
+      - antigravity_net
+  dlt_ingestion:
+    build:
+      context: .
+      dockerfile: Dockerfile.ingestion
+    environment:
+      DESTINATION__POSTGRES__CREDENTIALS: postgresql://user:password@postgres:5432/db
+      PIPELINE_NAME: antigravity_pipeline
+    networks:
+      - antigravity_net
+
+  metabase-db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: metabase
+      POSTGRES_USER: metabase
+      POSTGRES_PASSWORD: metabasepassword
+    networks:
+      - antigravity_net
+    volumes:
+      - metabase_db_data:/var/lib/postgresql/data
+
+  metabase:
+    image: metabase/metabase:latest
+    ports:
+      - "3000:3000"
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: metabase
+      MB_DB_PORT: 5432
+      MB_DB_USER: metabase
+      MB_DB_PASS: metabasepassword
+      MB_DB_HOST: metabase-db
+    networks:
+      - antigravity_net
+    depends_on:
+      - metabase-db
+      - postgres
+
+volumes:
+  postgres_data: null
+  metabase_db_data: null
+networks:
+  antigravity_net:
+    driver: bridge
